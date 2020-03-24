@@ -174,19 +174,25 @@ class Folder(object):
             
             for (created_folder, sg_data_dict) in created_data:
 
-                # first process the static folders                
-                for cp in static_children:
-                    # note! if the static child is on the specific recursion path,
-                    # skip it, (we will create it below)
-                    if cp == child_to_process:
-                        continue
-                    
-                    cp.create_folders(io_receiver, 
-                                      created_folder, 
-                                      sg_data_dict, 
-                                      is_primary=False, 
-                                      explicit_child_list=[], 
-                                      engine=engine)
+# Dan 25/03/2020
+#
+# This code block seems to result in ever folder in the project being visited and is veryslow.                                                                              
+# I believe it is also unecessary, as the api documentation for core.create_filesystem_structure()
+# which calls it is supposed to operate by entity, not the entire project.
+# 
+#                # first process the static folders                
+#                for cp in static_children:
+#                    # note! if the static child is on the specific recursion path,
+#                    # skip it, (we will create it below)
+#                    if cp == child_to_process:
+#                        continue
+#                    
+#                    cp.create_folders(io_receiver, 
+#                                      created_folder, 
+#                                      sg_data_dict, 
+#                                      is_primary=False, 
+#                                      explicit_child_list=[], 
+#                                      engine=engine)
                 
                 # and then recurse down our specific recursion path
                 child_to_process.create_folders(io_receiver, 
