@@ -342,6 +342,7 @@ class Entity(Folder):
             # appears in several locations in the filesystem and that the filters are responsible
             # for determining which location to use for a particular asset.
             print("495_entity3. Retrieving id from tokens: {}".format(tokens))
+            print("495_entity3a. my_sg_data_key: {}".format(my_sg_data_key))
             my_id = tokens[my_sg_data_key]["id"]
             print("495_entity4. my_id: {}".format(my_id))
             additional_filters.append(
