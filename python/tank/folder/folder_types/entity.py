@@ -275,9 +275,11 @@ class Entity(Folder):
         to have a pathway where the same entity type exists multiple times. For example an
         asset / sub asset relationship.
         """
+        print("495_entity1. shotgun_data: {}".format(shotgun_data))
 
         tokens = copy.deepcopy(shotgun_data)
 
+        print("495_entity2. tokens deepcopy: {}".format(tokens))
         # If we don't have an entry in tokens for the current entity type, then we can't
         # extract any tokens. Used by #17726. Typically, we start with a "seed", and then go
         # upwards. For example, if the seed is a Shot id, we then scan upwards, look at the config
@@ -339,7 +341,9 @@ class Entity(Folder):
             # stop processing. This would be needed in a setup where (for example) Asset
             # appears in several locations in the filesystem and that the filters are responsible
             # for determining which location to use for a particular asset.
+            print("495_entity3. Retrieving id from tokens: {}".format(tokens))
             my_id = tokens[my_sg_data_key]["id"]
+            print("495_entity4. my_id: {}".format(my_id))
             additional_filters.append(
                 {"path": "id", "relation": "is", "values": [my_id]}
             )

@@ -79,6 +79,7 @@ class Folder(object):
         :param shotgun_data: Shotgun data dictionary. For more information,
                              see the Entity implementation.
         """
+        print("495_base. shotgun_data: {}".format(shotgun_data))
         if self._parent is None:
             return shotgun_data
         else:
