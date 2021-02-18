@@ -50,33 +50,35 @@ class QtImporter(object):
             self._qt_version_tuple,
         ) = self._import_modules(interface_version_requested)
 
+        self._modules = self._modules or {}
+
     @property
     def QtCore(self):
         """
         :returns: QtCore module, if available.
         """
-        return self._modules.get("QtCore") if hasattr(self, '_modules') else None
+        return self._modules.get("QtCore")
 
     @property
     def QtGui(self):
         """
         :returns: QtGui module, if available.
         """
-        return self._modules.get("QtGui") if hasattr(self, '_modules') else None
+        return self._modules.get("QtGui")
 
     @property
     def QtWebKit(self):
         """
         :returns: QtWebKit module, if available.
         """
-        return self._modules.get("QtWebKit") if hasattr(self, '_modules') else None
+        return self._modules.get("QtWebKit")
 
     @property
     def QtNetwork(self):
         """
         :returns: QtNetwork module, if available.
         """
-        return self._modules.get("QtNetwork") if hasattr(self, '_modules') else None
+        return self._modules.get("QtNetwork")
 
     @property
     def QtWebEngineWidgets(self):
