@@ -79,6 +79,7 @@ class Folder(object):
         :param shotgun_data: Shotgun data dictionary. For more information,
                              see the Entity implementation.
         """
+        print("495_base. shotgun_data: {}".format(shotgun_data))
         if self._parent is None:
             return shotgun_data
         else:
@@ -165,6 +166,10 @@ class Folder(object):
         # run the actual folder creation
         created_data = self._create_folders_impl(io_receiver, path, sg_data)
 
+        # dan: this is necessary for now, but is clearly not right that we need to do this:
+        if not created_data:
+            return
+
         # and recurse down to children
         if explicit_child_list:
 
@@ -179,21 +184,24 @@ class Folder(object):
 
             for (created_folder, sg_data_dict) in created_data:
 
-                # first process the static folders
-                for cp in static_children:
-                    # note! if the static child is on the specific recursion path,
-                    # skip it, (we will create it below)
-                    if cp == child_to_process:
-                        continue
-
-                    cp.create_folders(
-                        io_receiver,
-                        created_folder,
-                        sg_data_dict,
-                        is_primary=False,
-                        explicit_child_list=[],
-                        engine=engine,
-                    )
+                # This code block seems to result in ever folder in the project being visited and is veryslow.
+                # I believe it is also unecessary, as the api documentation for core.create_filesystem_structure()
+                # which calls it is supposed to operate by entity, not the entire project.
+                # # first process the static folders
+                # for cp in static_children:
+                #     # note! if the static child is on the specific recursion path,
+                #     # skip it, (we will create it below)
+                #     if cp == child_to_process:
+                #         continue
+                #
+                #     cp.create_folders(
+                #         io_receiver,
+                #         created_folder,
+                #         sg_data_dict,
+                #         is_primary=False,
+                #         explicit_child_list=[],
+                #         engine=engine,
+                #     )
 
                 # and then recurse down our specific recursion path
                 child_to_process.create_folders(
