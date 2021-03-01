@@ -392,9 +392,9 @@ class IODescriptorRez(IODescriptorBase):
 
         :returns: IODescriptorRez object
         """
-        # we are always the latest version :)
-        log.info("get_latest_version", self)
-        return IODescriptorRez(self.self._descriptor_dict)
+#        log.info("get_latest_version", str_rep)
+        log.info("get_latest_version")
+        return IODescriptorRez(self._descriptor_dict, self._sg_connection, self._bundle_type)
 
     def get_latest_cached_version(self, constraint_pattern=None):
         """
@@ -413,7 +413,7 @@ class IODescriptorRez(IODescriptorBase):
         # we are always the latest version
         # also assume that the payload always exists on disk.
         log.info("get_latest_cached_version", self)
-        return IODescriptorRez(self.self._descriptor_dict)
+        return IODescriptorRez(self._descriptor_dict, self._sg_connection, self._bundle_type)
         
         #return self
 
