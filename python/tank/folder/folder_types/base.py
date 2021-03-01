@@ -166,6 +166,10 @@ class Folder(object):
         # run the actual folder creation
         created_data = self._create_folders_impl(io_receiver, path, sg_data)
 
+        # dan: this is necessary for now, but is clearly not right that we need to do this:
+        if not created_data:
+            return
+
         # and recurse down to children
         if explicit_child_list:
 
