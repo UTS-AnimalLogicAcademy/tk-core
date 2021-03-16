@@ -156,10 +156,10 @@ class IODescriptorRez(IODescriptorBase):
         return path
 
     def resolve_context(self, packages):
-        print("== Resolving with REZ")
+        # print("== Resolving with REZ")
 
         if "USE_REZ_CACHE" not in os.environ:
-            print("= NOT USING REZ CACHE")
+            # print("= NOT USING REZ CACHE")
             if not os.environ.get('REZ_PATH'):
                 raise TankDescriptorError("Could not find REZ_PATH in the envioronment!")
 
@@ -203,7 +203,7 @@ class IODescriptorRez(IODescriptorBase):
 
             return context
         else:
-            print("= USING REZ CACHE")
+            # print("= USING REZ CACHE")
             if not os.environ.get('REZ_PATH'):
                 raise TankDescriptorError("Could not find REZ_PATH in the envioronment!")
 
