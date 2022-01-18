@@ -139,7 +139,7 @@ class CoreUpdateAction(Action):
         code_install_root = pipelineconfig_utils.get_path_to_current_core()
 
         log.info("")
-        log.info("Welcome to the Shotgun Pipeline Toolkit update checker!")
+        log.info("Welcome to the SG Pipeline Toolkit update checker!")
         log.info("This script will check if the Toolkit Core API installed")
         log.info("in %s" % code_install_root)
         log.info("is up to date.")
@@ -154,8 +154,12 @@ class CoreUpdateAction(Action):
         )
         log.info("")
         log.info("For more information, please see the Toolkit documentation:")
-        log.info("https://support.shotgunsoftware.com/entries/96141707")
-        log.info("https://support.shotgunsoftware.com/entries/96142347")
+        log.info(
+            "https://developer.shotgridsoftware.com/3414fbb3/?title=Desktop+Startup"
+        )
+        log.info(
+            "https://developer.shotgridsoftware.com/162eaa4b/?title=Pipeline+Integration+Components"
+        )
         log.info("")
 
         config_desc = self.tk.configuration_descriptor if self.tk is not None else None
@@ -164,7 +168,7 @@ class CoreUpdateAction(Action):
         current_version = installer.get_current_version_number()
         new_version = installer.get_update_version_number()
         log.info(
-            "You are currently running version %s of the Shotgun Pipeline Toolkit"
+            "You are currently running version %s of the SG Pipeline Toolkit"
             % current_version
         )
 
@@ -177,7 +181,7 @@ class CoreUpdateAction(Action):
         elif status == TankCoreUpdater.UPDATE_BLOCKED_BY_SG:
             req_sg = installer.get_required_sg_version_for_update()
             msg = (
-                "%s version of core requires a more recent version (%s) of Shotgun!"
+                "%s version of core requires a more recent version (%s) of ShotGrid!"
                 % ("The newest" if core_version is None else "The requested", req_sg)
             )
             log.error(msg)
@@ -246,7 +250,7 @@ class CoreUpdateAction(Action):
                 return_status = {"status": "updated", "new_version": new_version}
 
             else:
-                log.info("The Shotgun Pipeline Toolkit will not be updated.")
+                log.info("The SG Pipeline Toolkit will not be updated.")
 
         else:
             raise TankError("Unknown Update state!")
@@ -429,7 +433,7 @@ class TankCoreUpdater(object):
         core_api_yaml_path = os.path.join(config_root, "core", "core_api.yml")
 
         message = (
-            "# Shotgun Pipeline Toolkit configuration file. This file was automatically\n"
+            "# SG Pipeline Toolkit configuration file. This file was automatically\n"
             "# created during the latest core update.\n"
         )
         with open(core_api_yaml_path, "w") as f:
