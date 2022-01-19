@@ -109,7 +109,7 @@ class TestShotgunYmlWriting(TestConfigurationWriterBase):
         )
         self.assertTrue(os.path.exists(shotgun_yml_path))
         with open(shotgun_yml_path, "rb") as fh:
-            return yaml.load(fh)
+            return yaml.load(fh, Loader=yaml.FullLoader)
 
     def test_no_template_generate_new_file(self):
         """
@@ -203,7 +203,7 @@ class TestInterpreterFilesWriter(TestConfigurationWriterBase):
 
     def test_desktop_interpreter(self):
         """
-        Checks that if we're running in the Shotgun Desktop we're writing the correct interpreter.
+        Checks that if we're running in the SG Desktop we're writing the correct interpreter.
         """
         expected_interpreters = self._get_default_intepreters()
         if is_windows():
