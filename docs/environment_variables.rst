@@ -16,7 +16,7 @@ Overrides the location where Toolkit stores data, which includes bootstrap data 
 
 ``SGTK_PREFERENCES_LOCATION``
 -----------------------------
-Allows you to store your configuration file somewhere else on your computer or on your network. See the `documentation here <https://developer.shotgridsoftware.com/8085533c/?title=ShotGrid+Integrations+Admin+Guide#toolkit-configuration-file>`_.
+Allows you to store your configuration file somewhere else on your computer or on your network. See the `documentation here <https://help.autodesk.com/view/SGDEV/ENU/?guid=SGD_pg_integrations_admin_guides_integrations_admin_guide_html#toolkit-configuration-file>`_.
 
 ``TK_BOOTSTRAP_CONFIG_OVERRIDE``
 --------------------------------
@@ -26,6 +26,44 @@ Low level bypass to set the configuration desciptor URI that the bootstrap API s
 ------------
 Controls debug logging.
 
+.. _environment_variables_authentication:
+
+Authentication
+==============
+
+``SGTK_DEFAULT_AUTH_METHOD``
+----------------------------
+Specifies which authentication method should be selected if none are selected yet.
+Available values are `credentials`, `qt_web_login`, and `app_session_launcher`.
+
+Note: this variable does not override the session cache. If a valid method has
+been recorded in the session cache, this method will be prioritized over the
+one provided by `SGTK_DEFAULT_AUTH_METHOD`.
+
+``SGTK_AUTH_ALLOW_NO_HTTPS``
+----------------------------
+Allows the user to bypass the HTTPS requirement for the authentication methods.
+This is not recommended and should only be used in combination with legacy ShotGrid local installations.
+
+``SGTK_FORCE_STANDARD_LOGIN_DIALOG``
+------------------------------------
+Always display the traditional authentication (login and password fields) in the
+login window dialog even when the ShotGrid site has other authentication methods
+enabled.
+
+``TK_AUTH_PRODUCT``
+-------------------
+Provide a custom application name when using the "App Session Launcher"
+authentication instead of relying on an autodetected name.
+
+``TK_SHOTGRID_DEFAULT_LOGIN``
+-----------------------------
+Indicates the default Autodesk Identity account to use to pre-fill the login window dialog. This is purely for the convenience of the user and has no other use or side-effects.
+
+``TK_SHOTGRID_SSO_DOMAIN``
+--------------------------
+When the user's Autodesk Identity account is on an email domain that uses SSO for authentication, setting this variable will allow the bypass of the initial Autodesk Identity window. This saves the user from entering their email twice. The expected format of this variable should be an email domain, like `gmail.com`, `mystudio.com`, `autodesk.com`, etc.. Other than that, this variable has no other use or side-effects.
+
 .. _environment_variables_bundle_cache:
 
 Bundle cache
@@ -33,7 +71,7 @@ Bundle cache
 
 ``SHOTGUN_BUNDLE_CACHE_FALLBACK_PATHS``
 ---------------------------------------
-Path that lets a user specify bundle cache fallbacks to go look for a bundle in case it is now found in the bundle cache. This is part of the :ref:`bootstrap_api`. Also see `ShotGrid Integrations Admin guide <https://developer.shotgridsoftware.com/8085533c/?title=ShotGrid+Integrations+Admin+Guide#managing-updates-via-manual-download>`_.
+Path that lets a user specify bundle cache fallbacks to go look for a bundle in case it is now found in the bundle cache. This is part of the :ref:`bootstrap_api`. Also see `ShotGrid Integrations Admin guide <https://help.autodesk.com/view/SGDEV/ENU/?guid=SGD_pg_integrations_admin_guides_integrations_admin_guide_html#managing-updates-via-manual-download>`_.
 
 ``SHOTGUN_BUNDLE_CACHE_PATH``
 -----------------------------
@@ -50,8 +88,17 @@ File resolving
 
 ``SHOTGUN_PATH_<WINDOWS|MAC|LINUX>_<STORAGENAME>``
 --------------------------------------------------
-Specifies your local storage root on different operating systems. See `Resolving local file links <https://developer.shotgridsoftware.com/8085533c/?title=ShotGrid+Integrations+Admin+Guide#resolving-local-file-links>`_.
+Specifies your local storage root on different operating systems. See `Resolving local file links <https://help.autodesk.com/view/SGDEV/ENU/?guid=SGD_pg_integrations_admin_guides_integrations_admin_guide_html#resolving-local-file-links>`_.
 
 ``SHOTGUN_PATH_<WINDOWS|MAC|LINUX>``
 ------------------------------------
-Resolves a ``file://`` URL on different operating systems. See `Resolving file URLS <https://developer.shotgridsoftware.com/8085533c/?title=ShotGrid+Integrations+Admin+Guide#resolving-file-urls>`_.
+Resolves a ``file://`` URL on different operating systems. See `Resolving file URLS <https://help.autodesk.com/view/SGDEV/ENU/?guid=SGD_pg_integrations_admin_guides_integrations_admin_guide_html#resolving-file-urls>`_.
+
+
+Thumbnail display for ShotGrid Desktop
+======================================
+
+``SGTK_PROJ_THUMB_OLD``
+-----------------------
+
+When specified the old thumbnail cropping behavior will be used. See `Configuring the thumbnail display in ShotGrid Desktop <https://help.autodesk.com/view/SGDEV/ENU/?guid=SGD_pg_integrations_admin_guides_integrations_admin_guide_html#configuring-the-thumbnail-display-in-shotgrid-desktop>`_

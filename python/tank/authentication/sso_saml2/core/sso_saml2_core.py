@@ -17,10 +17,10 @@ Module to support Web login via a web browser and automated session renewal.
 # pylint: disable=too-many-statements
 
 import base64
-import logging
 import os
 import sys
 import time
+import urllib
 
 from .authentication_session_data import AuthenticationSessionData
 from .errors import (
@@ -33,7 +33,6 @@ from .errors import (
 from .utils import (
     _decode_cookies,
     _encode_cookies,
-    _sanitize_http_proxy,
     get_csrf_key,
     get_csrf_token,
     get_logger,
@@ -41,6 +40,7 @@ from .utils import (
     get_session_id,
     get_user_name,
 )
+from ...utils import sanitize_http_proxy
 
 try:
     from .username_password_dialog import UsernamePasswordDialog
@@ -49,6 +49,7 @@ except ImportError:
     # environment.
     UsernamePasswordDialog = None
 
+from tank_vendor.six.moves.urllib.parse import urlencode
 
 # Error messages for events.
 HTTP_CANT_CONNECT_TO_SHOTGUN = "Cannot Connect To SG site."
@@ -117,13 +118,33 @@ FUNCTION_PROTOTYPE_BIND_POLYFILL = """
     }
 """
 
+# login paths, used by the Unified Login Flow.
+URL_ULF_RENEW_PATH = "/auth/renew"
+URL_ULF_LANDING_PATH = "/auth/landing"
+
+
+def get_renew_path(session):
+    """Construct the renew path, leveraging existing environment variables"""
+    renew_path = session.host + URL_ULF_RENEW_PATH + "?"
+    renew_params = {"product": session.product}
+    # When this variable is set, it is passed to Autodesk Identity's login.
+    tk_shotgun_default_login = os.getenv("TK_SHOTGRID_DEFAULT_LOGIN")
+    # When this variable is set for a SSO domain, skip the initial login page.
+    tk_shotgun_sso_domain = os.getenv("TK_SHOTGRID_SSO_DOMAIN")
+
+    # ShotGrid's renew endpoint supports some useful
+    # Autodesk Identity params.
+    if tk_shotgun_default_login:
+        renew_params["email"] = tk_shotgun_default_login
+    if tk_shotgun_sso_domain:
+        renew_params["sso_domain"] = tk_shotgun_sso_domain
+
+    renew_path += urlencode(renew_params)
+    return renew_path
+
 
 class SsoSaml2Core(object):
     """Performs SG Web login and pre-emptive renewal for SSO sessions."""
-
-    # login paths, used by the Unified Login Flow.
-    renew_path = "/auth/renew"
-    landing_path = "/auth/landing"
 
     def __init__(self, window_title="Web Login", qt_modules=None):
         """
@@ -254,7 +275,7 @@ class SsoSaml2Core(object):
 
         else:
 
-            class TKWebPageQt5(QtWebEngineWidgets.QWebEnginePage):
+            class TKWebPageQtWebEngine(QtWebEngineWidgets.QWebEnginePage):
                 """
                 Wrapper class to better control the behaviour when clicking on links
                 in the Qt5 web browser. If we are asked to open a new tab/window, then
@@ -265,8 +286,8 @@ class SsoSaml2Core(object):
                     """
                     Class Constructor.
                     """
-                    get_logger().debug("TKWebPageQt5.__init__")
-                    super(TKWebPageQt5, self).__init__(profile, parent)
+                    get_logger().debug("TKWebPageQtWebEngine.__init__")
+                    super(TKWebPageQtWebEngine, self).__init__(profile, parent)
                     self._profile = profile
                     self._developer_mode = developer_mode
 
@@ -274,7 +295,7 @@ class SsoSaml2Core(object):
                     """
                     Class Destructor.
                     """
-                    get_logger().debug("TKWebPageQt5.__del__")
+                    get_logger().debug("TKWebPageQtWebEngine.__del__")
 
                 def mainFrame(self):
                     """
@@ -295,7 +316,7 @@ class SsoSaml2Core(object):
                     """
                     if self._developer_mode:
                         get_logger().debug(
-                            "TKWebPageQt5.acceptNavigationRequest: %s (%s)",
+                            "TKWebPageQtWebEngine.acceptNavigationRequest: %s (%s)",
                             url.toString(),
                             n_type,
                         )
@@ -315,10 +336,10 @@ class SsoSaml2Core(object):
                     When a link leading to a new window/tab is clicked, this method is
                     called.
                     """
-                    get_logger().debug("TKWebPageQt5.createWindow: %s", window_type)
+                    get_logger().debug("TKWebPageQtWebEngine.createWindow: %s", window_type)
                     # Here we return a new page with no profile, that will be used solely
                     # to trigger the call to the external browser.
-                    return TKWebPageQt5(None, self.parent())
+                    return TKWebPageQtWebEngine(None, self.parent())
 
                 def certificateError(self, certificate_error):
                     """
@@ -326,7 +347,7 @@ class SsoSaml2Core(object):
                     For the time being, we ignore all certificate errors.
                     """
                     get_logger().debug(
-                        "TKWebPageQt5.certificateError: %s", certificate_error
+                        "TKWebPageQtWebEngine.certificateError: %s", certificate_error
                     )
                     return True
 
@@ -363,7 +384,7 @@ class SsoSaml2Core(object):
             )
             self._view = QtWebEngineWidgets.QWebEngineView(self._dialog)
             self._view.setPage(
-                TKWebPageQt5(self._profile, self._dialog, self._developer_mode)
+                TKWebPageQtWebEngine(self._profile, self._dialog, self._developer_mode)
             )
             self._view.page().authenticationRequired.connect(
                 self.on_authentication_required
@@ -418,7 +439,7 @@ class SsoSaml2Core(object):
             self._view.settings().setUserStyleSheetUrl(url)
         else:
             self._logger.debug(
-                "We are in a Qt5 environment, registering cookie handlers."
+                "We are in a QtWebEngine environment, registering cookie handlers."
             )
             # We want to persist cookies accross sessions.
             # The cookies will be cleared if there are no prior session in
@@ -545,7 +566,7 @@ class SsoSaml2Core(object):
 
     def update_session_from_browser(self):
         """
-        Updtate our session from the browser cookies.
+        Update our session from the browser cookies.
         """
         self._logger.debug("Updating session cookies from browser")
 
@@ -593,7 +614,7 @@ class SsoSaml2Core(object):
 
         qt_cookies = []
         if self._session is not None:
-            parsed = _sanitize_http_proxy(self._session.http_proxy)
+            parsed = sanitize_http_proxy(self._session.http_proxy)
             if parsed.netloc:
                 self._logger.debug(
                     "Using HTTP proxy: %s://%s", parsed.scheme, parsed.netloc
@@ -689,7 +710,7 @@ class SsoSaml2Core(object):
         if self._developer_mode:
             self._logger.debug(
                 "_on_cookie_added: %s",
-                cookie.toRawForm(self._QtNetwork.QNetworkCookie.toRawForm),
+                cookie.toRawForm(self._QtNetwork.QNetworkCookie.NameAndValueOnly),
             )
         self._cookie_jar.insertCookie(cookie)
 
@@ -704,7 +725,7 @@ class SsoSaml2Core(object):
         if self._developer_mode:
             self._logger.debug(
                 "_on_cookie_deleted: %s",
-                cookie.toRawForm(self._QtNetwork.QNetworkCookie.toRawForm),
+                cookie.toRawForm(self._QtNetwork.QNetworkCookie.NameAndValueOnly),
             )
         self._cookie_jar.deleteCookie(cookie)
 
@@ -787,9 +808,7 @@ class SsoSaml2Core(object):
 
         # We do not update the page cookies, assuming that they have already
         # have been cleared/updated before.
-        url = (
-            self._session.host + self.renew_path + "?product=%s" % self._session.product
-        )
+        url = get_renew_path(self._session)
         self._logger.debug("Navigating to %s", url)
         self._view.page().mainFrame().load(url)
 
@@ -841,7 +860,7 @@ class SsoSaml2Core(object):
             self._dialog.setWindowTitle(url)
         self._logger.debug("_on_url_changed %s", url)
         if self._session is not None and url.startswith(
-            self._session.host + self.landing_path
+            self._session.host + URL_ULF_LANDING_PATH
         ):
             self._sso_renew_watchdog_timer.stop()
             self.update_session_from_browser()
@@ -966,9 +985,7 @@ class SsoSaml2Core(object):
         self._view.raise_()
 
         # We append the product code to the GET request.
-        url = (
-            self._session.host + self.renew_path + "?product=%s" % self._session.product
-        )
+        url = get_renew_path(self._session)
         self._logger.debug("Navigating to %s", url)
         self._view.page().mainFrame().load(url)
 

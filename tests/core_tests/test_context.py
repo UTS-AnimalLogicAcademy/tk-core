@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 # Copyright (c) 2013 Shotgun Software Inc.
 #
 # CONFIDENTIAL AND PROPRIETARY
@@ -16,9 +18,11 @@ import datetime
 from sgtk.util import pickle
 import json
 
-from tank_test.tank_test_base import TankTestBase, setUpModule  # noqa
-
-from mock import patch, PropertyMock
+from tank_test.tank_test_base import setUpModule  # noqa
+from tank_test.tank_test_base import (
+    mock,
+    TankTestBase,
+)
 
 import tank
 from tank import context
@@ -28,6 +32,8 @@ from tank.templatekey import StringKey, IntegerKey
 from tank_vendor import yaml
 from tank_vendor import six
 from tank.authentication import ShotgunAuthenticator
+
+USER_NAME = "Üser Ñâme AñoVolvió JiříVyčítal"
 
 
 class TestContext(TankTestBase):
@@ -66,7 +72,7 @@ class TestContext(TankTestBase):
         # One human user not matching the current login
         self.other_user = {
             "type": "HumanUser",
-            "name": "user_name",
+            "name": USER_NAME,
             "id": 1,
             "login": "user_login",
         }
@@ -74,7 +80,7 @@ class TestContext(TankTestBase):
         self.current_login = tank.util.login.get_login_name()
         self.current_user = {
             "type": "HumanUser",
-            "name": "user_name",
+            "name": USER_NAME,
             "id": 2,
             "login": self.current_login,
         }
@@ -185,7 +191,7 @@ class TestEq(TestContext):
         # Assert that hashing function treats these as unequal
         self.assertNotEqual(hash(context_1), hash(not_context))
 
-    @patch("tank.util.login.get_current_user")
+    @mock.patch("tank.util.login.get_current_user")
     def test_lazy_load_user(self, get_current_user):
 
         get_current_user.return_value = self.current_user
@@ -215,7 +221,7 @@ class TestUser(TestContext):
         kws1["step"] = self.step
         self.context = context.Context(**kws1)
 
-    @patch("tank.util.login.get_current_user")
+    @mock.patch("tank.util.login.get_current_user")
     def test_local_login(self, get_current_user):
         """
         Test that if user is not supplied, the human user matching the
@@ -237,7 +243,7 @@ class TestCreateEmpty(TestContext):
 
 
 class TestFromPath(TestContext):
-    @patch("tank.util.login.get_current_user")
+    @mock.patch("tank.util.login.get_current_user")
     def test_shot(self, get_current_user):
 
         get_current_user.return_value = self.current_user
@@ -254,7 +260,7 @@ class TestFromPath(TestContext):
         self.assertIsNone(result.step)
         self.assertIsNone(result.task)
 
-    @patch("tank.util.login.get_current_user")
+    @mock.patch("tank.util.login.get_current_user")
     def test_external_path(self, get_current_user):
         get_current_user.return_value = self.current_user
         shot_path_abs = os.path.abspath(os.path.join(self.project_root, ".."))
@@ -285,7 +291,7 @@ class TestFromPath(TestContext):
 
 
 class TestFromPathWithPrevious(TestContext):
-    @patch("tank.util.login.get_current_user")
+    @mock.patch("tank.util.login.get_current_user")
     def test_shot(self, get_current_user):
 
         get_current_user.return_value = self.current_user
@@ -447,7 +453,7 @@ class TestFromEntity(TestContext):
         self.add_to_sg_mock_db(self.task)
         self.add_to_sg_mock_db(self.publishedfile)
 
-    @patch("tank.util.login.get_current_user")
+    @mock.patch("tank.util.login.get_current_user")
     def test_from_linked_entity_types(self, get_current_user):
         get_current_user.return_value = self.current_user
 
@@ -477,7 +483,7 @@ class TestFromEntity(TestContext):
             check_name=False,
         )
 
-    @patch("tank.util.login.get_current_user")
+    @mock.patch("tank.util.login.get_current_user")
     def test_entity_from_cache(self, get_current_user):
 
         get_current_user.return_value = self.current_user
@@ -497,7 +503,7 @@ class TestFromEntity(TestContext):
         self.check_entity(self.step, result.step)
         self.assertEqual(3, len(result.step))
 
-    @patch("tank.util.login.get_current_user")
+    @mock.patch("tank.util.login.get_current_user")
     def test_step_higher_entity(self, get_current_user):
         """
         Case that step appears in path above entity.
@@ -516,7 +522,7 @@ class TestFromEntity(TestContext):
         self.check_entity(self.shot, result.entity)
         self.check_entity(self.current_user, result.user)
 
-    @patch("tank.util.login.get_current_user")
+    @mock.patch("tank.util.login.get_current_user")
     def test_task_from_sg(self, get_current_user):
         """
         Case that all data is found from shotgun query
@@ -560,7 +566,7 @@ class TestFromEntity(TestContext):
         num_finds_after = self.tk.shotgun.finds
         self.assertEqual((num_finds_after - num_finds_before), 1)
 
-    @patch("tank.util.login.get_current_user")
+    @mock.patch("tank.util.login.get_current_user")
     def test_data_missing_non_task(self, get_current_user):
         """
         Case that entity does not exist on local cache or in shotgun
@@ -595,8 +601,8 @@ class TestFromEntity(TestContext):
             TankError, context.from_entity, self.tk, task["type"], task["id"]
         )
 
-    @patch("tank.context.from_entity")
-    @patch("tank.util.login.get_current_user")
+    @mock.patch("tank.context.from_entity")
+    @mock.patch("tank.util.login.get_current_user")
     def test_from_entity_dictionary(self, get_current_user, from_entity):
         """
         Test context.from_entity_dictionary - this can contruct a context from
@@ -629,8 +635,8 @@ class TestFromEntity(TestContext):
 
         self.check_entity(self.current_user, result.user)
 
-    @patch("tank.context.from_entity")
-    @patch("tank.util.login.get_current_user")
+    @mock.patch("tank.context.from_entity")
+    @mock.patch("tank.util.login.get_current_user")
     def test_from_entity_dictionary_additional_entities(
         self, get_current_user, from_entity
     ):
@@ -852,13 +858,13 @@ class TestAsTemplateFields(TestContext):
     # It seems like Python 2.7.16+ is a bit less comfortable with paths with the wrong orientation
     # for the slashes, so we'll generate test data that is more conforming to the current platform.
     # This isn't an issue in the real world, as we always sanitize our inputs.
-    @patch(
+    @mock.patch(
         "tank.context.Context._get_project_roots",
         return_value=["{0}{0}foo{0}bar".format(os.path.sep)],
     )
-    @patch(
+    @mock.patch(
         "tank.context.Context.entity_locations",
-        new_callable=PropertyMock(
+        new_callable=mock.PropertyMock(
             return_value=["{0}{0}foo{0}bar{0}baz".format(os.path.sep)]
         ),
     )
@@ -1194,7 +1200,7 @@ class TestSerialize(TestContext):
             "Version", {"code": "version_code", "project": self.project}
         )
 
-        self.user = self.mockgun.create("HumanUser", {"name": "user_name"})
+        self.user = self.mockgun.create("HumanUser", {"name": USER_NAME})
 
         self.kws = {}
         self.kws["tk"] = self.tk
@@ -1263,7 +1269,7 @@ class TestSerialize(TestContext):
             "additional_entities": [
                 {"type": "Sequence", "name": "seq_name", "id": self.seq["id"]}
             ],
-            "user": {"type": "HumanUser", "id": self.user["id"], "name": "user_name"},
+            "user": {"type": "HumanUser", "id": self.user["id"], "name": USER_NAME},
         }
 
         ctx = context.Context(**self.kws)
@@ -1428,7 +1434,7 @@ class TestMultiRoot(TestContext):
         self.assertEqual(expected_step_name, result["Step"])
         self.assertEqual(expected_shot_name, result["Shot"])
 
-    @patch("tank.util.login.get_current_user")
+    @mock.patch("tank.util.login.get_current_user")
     def test_non_primary_path(self, get_current_user):
         """Check that path which is not child of primary root create context."""
         get_current_user.return_value = self.current_user

@@ -172,10 +172,13 @@ def copy_file(src, dst, permissions=0o666):
                         be readable and writable for all users.
     """
     if is_windows():
+        src = os.path.realpath(src)
         # Check if the dst is a directory and change it to a filename if it is
         if os.path.isdir(dst):
             basename = os.path.basename(src)
             dst = os.path.join(dst, basename)
+
+        dst = os.path.realpath(dst)
         # Use larger copy buffer in the shutil.copyfileobj operation
         with open(src, mode="rb") as windows_src:
             with open(dst, mode="wb") as windows_dst:
@@ -239,9 +242,9 @@ def copy_folder(src, dst, folder_permissions=0o775, skip_list=None):
     # because we want users to be able to pass in
     # skip_list=[] in order to clear the default skip list.
     if skip_list is None:
-        actual_skip_list = SKIP_LIST_DEFAULT
+        actual_skip_list = list(SKIP_LIST_DEFAULT)
     else:
-        actual_skip_list = skip_list
+        actual_skip_list = list(skip_list)
 
     # add the items we always want to skip
     actual_skip_list.extend(SKIP_LIST_ALWAYS)
