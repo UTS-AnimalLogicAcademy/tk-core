@@ -315,11 +315,20 @@ class SessionUser(ShotgunUserImpl):
         :returns: True if the credentials are expired, False otherwise.
         """
         logger.debug("Connecting to SG to determine if credentials have expired...")
-        sg = Shotgun(
-            self.get_host(),
-            session_token=self.get_session_token(),
-            http_proxy=self.get_http_proxy(),
-        )
+        try:
+            sg = Shotgun(
+                self.get_host(),
+                session_token=self.get_session_token(),
+                http_proxy=self.get_http_proxy(),
+            )
+        except ConnectionRefusedError:
+            logger.warning(
+                "Unable to contact {host}".format(
+                    host=self.get_host(),
+                )
+            )
+            return True
+
         try:
             sg.find_one("HumanUser", [])
             return False
@@ -361,7 +370,7 @@ class SessionUser(ShotgunUserImpl):
 
         :returns: A string.
         """
-        return self._login
+        return six.ensure_str(self._login)
 
     @staticmethod
     def from_dict(payload):
@@ -602,7 +611,7 @@ def deserialize_user(payload):
         user_dict = sgjson.loads(six.ensure_binary(payload))
     else:
         # Unpickle the dictionary
-        user_dict = pickle.loads(six.ensure_binary(payload))
+        user_dict = pickle.loads(payload)
 
     # Find which user type we have
     global __factories
