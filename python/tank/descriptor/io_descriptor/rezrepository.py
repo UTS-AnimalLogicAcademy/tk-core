@@ -151,8 +151,15 @@ class IODescriptorRez(IODescriptorBase):
 
     def resolve_path(self, context):
         for resolved_package in context.resolved_packages:
-            if resolved_package.name == self._packages:
+            package = self._packages
+
+            #Check if version number is specified in version string
+            if "-" in package:
+                package = package.split("-")[0]
+
+            if resolved_package.name == package:
                 path = os.path.join(resolved_package.root, self._package_path)
+                
         return path
 
     def resolve_context(self, packages):
