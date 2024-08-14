@@ -104,11 +104,31 @@ class PySide6Patcher(PySide2Patcher):
 
             @staticmethod
             def grabWindow(window=0, x=0, y=0, width=-1, height=-1):
+                """
+                Add deprecated method
+                https://doc.qt.io/qt-5/qpixmap-obsolete.html#grabWindow
+                """
                 screen = QtGui.QApplication.primaryScreen()
                 return screen.grabWindow(window, x, y, width, height)
 
 
         QtGui.QPixmap = QPixmap
+
+    @classmethod
+    def _patch_QIcon(cls, QtGui):
+        """
+        Patch QIcon.
+
+        QIcon.pixmap method should create object from the patched QPixmap class
+        """
+
+        original_QIcon_pixmap = QtGui.QIcon.pixmap  # Returns a native QPixmap
+
+        def pixmap(self, *args, **kwargs):
+            return QtGui.QPixmap(original_QIcon_pixmap(self, *args, **kwargs))
+
+        QtGui.QIcon.pixmap = pixmap
+
 
     @classmethod
     def _patch_QLabel(cls, QtGui):
@@ -386,6 +406,21 @@ class PySide6Patcher(PySide2Patcher):
         QtCore.QRegularExpression = QRegularExpression
 
     @classmethod
+    def _patch_QCoreApplication_flush(cls, QtCore):
+        """
+        Patch QCoreApplication obsolete flush method for compatibility.
+        """
+
+        def flush():
+            """
+            No-op function to serve as a placeholder for QCoreApplication.flush().
+            """
+            pass
+
+        # Add the no-op flush method to QCoreApplication
+        QtCore.QCoreApplication.flush = flush
+
+    @classmethod
     def patch(cls):
         """
         Patch the PySide6 modules, classes and function to conform to the PySide interface.
@@ -472,12 +507,20 @@ class PySide6Patcher(PySide2Patcher):
         qt_gui_shim.QSortFilterProxyModel.filterRegExp = qt_gui_shim.QSortFilterProxyModel.filterRegularExpression
         qt_gui_shim.QSortFilterProxyModel.setFilterRegExp = qt_gui_shim.QSortFilterProxyModel.setFilterRegularExpression
 
+        # Patch the QCoreApplication.flush() method to ensure compatibility with code
+        # that expects this method, which is marked as obsolete.
+        # https://doc.qt.io/qt-5/qcoreapplication-obsolete.html#flush
+        cls._patch_QCoreApplication_flush(qt_core_shim)
+
         # QtGui
         # ------------------------------------------------------------------------------------
 
         # QLabel cannot be instantiated with None anymore
         cls._patch_QPixmap(qt_gui_shim)
         cls._patch_QLabel(qt_gui_shim)
+
+        # QIcon.pixmap method should create object from the patched QPixmap class
+        cls._patch_QIcon(qt_gui_shim)
 
         # QWheelEvent delta is obsolete
         # https://doc.qt.io/qt-5/qwheelevent-obsolete.html#delta
@@ -501,7 +544,7 @@ class PySide6Patcher(PySide2Patcher):
         # The default timeout parameter removed. This param, if given, will be ignored. It will
         # always timeout after 100 ms
         # https://doc.qt.io/qt-6/widgets-changes-qt6.html#the-qabstractbutton-class
-        qt_gui_shim.QAbstractButton.animateClick = lambda self, msec: self.animateClick()
+        qt_gui_shim.QAbstractButton.animateClick = lambda self, msec=0: self.animateClick()
 
         # Changes to QFont
         # https://doc.qt.io/qt-6/gui-changes-qt6.html#the-qfont-class
