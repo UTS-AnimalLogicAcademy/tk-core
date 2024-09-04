@@ -188,8 +188,8 @@ class IODescriptorRez(IODescriptorBase):
             import rez.package_repository
             reload(rez.package_repository)
 
-            import rez.packages_
-            reload(rez.packages_)
+            import rez.packages
+            reload(rez.packages)
 
             import rez.vendor.memcache
             reload(rez.vendor.memcache)
@@ -237,7 +237,7 @@ class IODescriptorRez(IODescriptorBase):
                 self._mod_resolved_context = rez.resolved_context
 
             if self._mod_package_repository_manager is None:
-                from rez.packages_ import package_repository_manager
+                from rez.packages import package_repository_manager
                 self._mod_package_repository_manager = package_repository_manager
 
             # reset the caching if this has been specified externally
