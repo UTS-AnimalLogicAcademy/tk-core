@@ -35,7 +35,7 @@ log = LogManager.get_logger(__name__)
 # to be able to get an environment to resolve. Chicken/egg situation.
 
 os.environ["REZ_CONFIG_FILE"]="/mnt/ala/software/pipeline/config/rezconfig.py"
-os.environ["REZ_PATH"] = "/mnt/ala/software/ext_packages/rez/2.2.0/platform-linux/arch-x86_64/os-RedHatEnterpriseServer-6.8/rez"
+os.environ["REZ_USED"] = "/mnt/ala/software/ext_packages/rez/3.1.1/platform-linux/arch-x86_64/python-3.7+/os-RedHatEnterprise-8.10/rez"
 
 def toStrDict(dictobj):
     return dict([(str(k), str(v)) for k, v in dictobj.items()])
@@ -167,11 +167,11 @@ class IODescriptorRez(IODescriptorBase):
 
         if "USE_REZ_CACHE" not in os.environ:
             # print("= NOT USING REZ CACHE")
-            if not os.environ.get('REZ_PATH'):
-                raise TankDescriptorError("Could not find REZ_PATH in the envioronment!")
+            if not os.environ.get('REZ_USED'):
+                raise TankDescriptorError("Could not find REZ_USED in the envioronment!")
 
             # add rez python to the path, so we can resolve the environment
-            rez_path = os.environ['REZ_PATH']+'/..'
+            rez_path = os.environ['REZ_USED']+'/..'
             if (rez_path not in sys.path):
                 sys.path.insert(0, rez_path)
                 log.debug("Adding rez path: " + rez_path)
@@ -211,11 +211,11 @@ class IODescriptorRez(IODescriptorBase):
             return context
         else:
             # print("= USING REZ CACHE")
-            if not os.environ.get('REZ_PATH'):
+            if not os.environ.get('REZ_USED'):
                 raise TankDescriptorError("Could not find REZ_PATH in the envioronment!")
 
             # add rez python to the path, so we can resolve the environment
-            rez_path = os.environ['REZ_PATH']+'/..'
+            rez_path = os.environ['REZ_USED']+'/..'
             if (rez_path not in sys.path):
                 sys.path.insert(0, rez_path)
                 log.debug("Adding rez path: " + rez_path)
