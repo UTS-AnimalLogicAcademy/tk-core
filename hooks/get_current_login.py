@@ -53,6 +53,8 @@ class GetCurrentLogin(Hook):
                 import pwd
 
                 pwd_entry = pwd.getpwuid(os.geteuid())
+                if(pwd_entry[0].startswith("u")):
+                    return pwd_entry[0][1:]
                 return pwd_entry[0]
             except:
                 return None
