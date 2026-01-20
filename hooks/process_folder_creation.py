@@ -15,9 +15,7 @@ called.
 
 from tank import Hook
 import os
-import sys
 import shutil
-from tank_vendor import six
 from tank.util import is_windows
 
 
@@ -178,14 +176,14 @@ class ProcessFolderCreation(Hook):
                     # create a new file based on content
                     path = i.get("path")
                     parent_folder = os.path.dirname(path)
-                    content = i.get("content")
+                    content = i.get("content", "")
                     if not os.path.exists(parent_folder) and not preview_mode:
                         os.makedirs(parent_folder, 0o777)
                     if not os.path.exists(path):
                         if not preview_mode:
                             # create the file
                             fp = open(path, "wb")
-                            fp.write(six.ensure_binary(content))
+                            fp.write(content.encode("utf-8"))
                             fp.close()
                             # and set permissions to open
                             os.chmod(path, 0o666)

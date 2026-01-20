@@ -23,7 +23,6 @@ from . import constants
 from . import pipelineconfig_utils
 from .pipelineconfig import PipelineConfiguration
 from .util import LocalFileStorageManager
-from tank_vendor import six
 
 log = LogManager.get_logger(__name__)
 
@@ -152,7 +151,7 @@ def _from_path(path, force_reread_shotgun_cache):
     :rtype: :class:`PipelineConfiguration`
     :raises: :class:`TankInitError`
     """
-    if not isinstance(path, six.string_types):
+    if not isinstance(path, str):
         raise ValueError(
             "Cannot create a configuration from path '%s' - path must be a string."
             % path
@@ -596,8 +595,8 @@ def _get_pipeline_configs_for_path(path, data):
     for project_path in project_paths:
 
         # (like the PTR API, this logic is case preserving, not case insensitive)
-        path_lower = six.ensure_str(path.lower())
-        proj_path_lower = six.ensure_str(project_path.lower())
+        path_lower = path.lower()
+        proj_path_lower = project_path.lower()
         # check if the path matches. Either
         # direct match: path: /mnt/proj_x == project path: /mnt/proj_x
         # child path: path: /mnt/proj_x/foo/bar starts with /mnt/proj_x/

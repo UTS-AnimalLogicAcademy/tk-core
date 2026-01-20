@@ -11,24 +11,22 @@
 """
 Logic for publishing files to Shotgun.
 """
-from __future__ import with_statement
 
 import os
-from tank_vendor.six.moves import urllib
 import pprint
+import urllib.parse
+import urllib.request
 
-from .publish_util import (
-    get_published_file_entity_type,
-    get_cached_local_storages,
-    find_publish,
-)
-from ..errors import ShotgunPublishError
 from ...errors import TankError, TankMultipleMatchingTemplatesError
 from ...log import LogManager
+from .. import constants, login
+from ..errors import ShotgunPublishError
 from ..shotgun_path import ShotgunPath
-from .. import constants
-from .. import login
-from tank_vendor import six
+from .publish_util import (
+    find_publish,
+    get_cached_local_storages,
+    get_published_file_entity_type,
+)
 
 log = LogManager.get_logger(__name__)
 
@@ -254,7 +252,7 @@ def register_publish(tk, context, path, name, version_number, **kwargs):
         sg_published_file_type = None
         # query shotgun for the published_file_type
         if published_file_type:
-            if not isinstance(published_file_type, six.string_types):
+            if not isinstance(published_file_type, str):
                 raise TankError("published_file_type must be a string")
 
             if published_file_entity_type == "PublishedFile":
@@ -627,7 +625,9 @@ def _create_published_file(
         )
         return data
     else:
-        log.debug("Registering publish in Flow Production Tracking: %s" % pprint.pformat(data))
+        log.debug(
+            "Registering publish in Flow Production Tracking: %s" % pprint.pformat(data)
+        )
         return tk.shotgun.create(published_file_entity_type, data)
 
 
@@ -666,7 +666,7 @@ def _translate_abstract_fields(tk, path):
                     if abstract_key_name in cur_fields:
                         cur_fields[abstract_key_name] = template.keys[
                             abstract_key_name
-                        ]._get_default()
+                        ].default
                 path = template._apply_fields(cur_fields, skip_defaults=True)
         else:
             log.debug(
@@ -797,7 +797,7 @@ def _calc_path_cache(tk, path, project_names=None):
     norm_path = ShotgunPath.normalize(path)
 
     # normalize to only use forward slashes
-    norm_path = six.ensure_str(norm_path.replace("\\", "/"))
+    norm_path = norm_path.replace("\\", "/")
 
     # get roots - dict keyed by storage name
     storage_roots = tk.pipeline_configuration.get_local_storage_roots()
@@ -817,7 +817,7 @@ def _calc_path_cache(tk, path, project_names=None):
 
             # append project and normalize
             proj_path = root_path_obj.join(project_name).current_os
-            proj_path = six.ensure_str(proj_path.replace(os.sep, "/"))
+            proj_path = str(proj_path.replace(os.sep, "/"))
 
             if norm_path.lower().startswith(proj_path.lower()):
                 # our path matches this storage!
